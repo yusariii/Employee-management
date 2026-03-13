@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # 1. Container cho Database MySQL
+  mysql-db:
+    image: mysql:8.0
+    container_name: hr_database_container
+    environment:
+      # Bạn đổi tên database hr_db thành tên mà bạn đang dùng trong application.properties nhé
+      MYSQL_DATABASE: employee_db
+      MYSQL_ROOT_PASSWORD: root # Đặt pass root cho MySQL trong container
+    ports:
+      # Mapping cổng: Ánh xạ cổng 3307 của máy bạn vào cổng 3306 của container 
+      # (Dùng 3307 để không bị đụng hàng với MySQL XAMPP đang chạy trên máy bạn)
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql # Tạo ổ cứng ảo để tắt máy không bị mất sạch dữ liệu
+
+  # 2. Container cho Backend Spring Boot của bạn
+  backend-app:
+    build: . # Bảo Docker nhìn vào file Dockerfile ở thư mục hiện tại để tự build image
+    container_name: hr_backend_container
+    ports:
+      - "8080:8080" # Mở cửa 8080 ra ngoài
+    depends_on:
+      - mysql-db # Bắt buộc phải chờ ông mysql-db khởi động xong thì app mới được chạy
+    environment:
+      # ĐÂY LÀ PHÉP THUẬT: Ghi đè file application.properties của bạn bằng biến môi trường!
+      # Thay vì localhost, chúng ta trỏ thẳng tên host là tên của container MySQL (mysql-db)
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/employee_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update # Tự động tạo bảng nếu chưa có
+
+volumes:
+  db_data:
