@@ -24,6 +24,8 @@ services:
       - "8080:8080" # Mở cửa 8080 ra ngoài
     depends_on:
       - mysql-db # Bắt buộc phải chờ ông mysql-db khởi động xong thì app mới được chạy
+    env_file:
+      - .env
     environment:
       # ĐÂY LÀ PHÉP THUẬT: Ghi đè file application.properties của bạn bằng biến môi trường!
       # Thay vì localhost, chúng ta trỏ thẳng tên host là tên của container MySQL (mysql-db)

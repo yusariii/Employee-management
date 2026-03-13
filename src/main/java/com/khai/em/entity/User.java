@@ -1,6 +1,5 @@
 package com.khai.em.entity;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,16 +18,18 @@ import jakarta.persistence.Column;
 @Table(name = "users")
 public class User {
 
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-        @NotNull(message = "employee is mandatory")
+    @NotNull(message = "employee is mandatory")
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = false, unique = true)
     private Employee employee;
 
+    @NotBlank(message = "email is mandatory")
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @NotBlank(message = "username is mandatory")
     @Column(nullable = false, unique = true)
@@ -57,6 +58,14 @@ public class User {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getUsername() {

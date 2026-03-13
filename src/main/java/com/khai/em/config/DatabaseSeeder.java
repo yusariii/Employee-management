@@ -1,4 +1,4 @@
-package com.khai.em.config; 
+package com.khai.em.config;
 
 import com.khai.em.entity.Employee;
 import com.khai.em.entity.Role;
@@ -37,12 +37,13 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             User adminUser = new User();
             adminUser.setUsername("admin");
-            adminUser.setPassword(passwordEncoder.encode("admin123")); 
+            adminUser.setPassword(passwordEncoder.encode("admin123"));
             adminUser.setEmployee(adminEmployee);
+            adminUser.setEmail("admin@gmail.com");
             adminUser.setRole(Role.ADMIN);
             userRepository.save(adminUser);
 
-            //MANAGER
+            // MANAGER
             Employee managerEmployee = new Employee();
             managerEmployee.setName("Nguyen Van A");
             managerEmployee.setDepartment("MANAGEMENT");
@@ -54,21 +55,23 @@ public class DatabaseSeeder implements CommandLineRunner {
             managerUser.setPassword(passwordEncoder.encode("manager123"));
             managerUser.setEmployee(managerEmployee);
             managerUser.setRole(Role.MANAGER);
+            managerUser.setEmail("manager@gmail.com");
             userRepository.save(managerUser);
 
-             //EMPLOYEE
-             Employee employee = new Employee();
-             employee.setName("Tran Thi B");
-             employee.setDepartment("SALES");
-             employee.setSalary(500000.0);
-             employeeRepository.save(employee);
+            // EMPLOYEE
+            Employee employee = new Employee();
+            employee.setName("Tran Thi B");
+            employee.setDepartment("SALES");
+            employee.setSalary(500000.0);
+            employeeRepository.save(employee);
 
-             User employeeUser = new User();
-             employeeUser.setUsername("employee");
-             employeeUser.setPassword(passwordEncoder.encode("employee123"));
-             employeeUser.setEmployee(employee);
-             employeeUser.setRole(Role.EMPLOYEE);
-             userRepository.save(employeeUser);
+            User employeeUser = new User();
+            employeeUser.setUsername("employee");
+            employeeUser.setPassword(passwordEncoder.encode("employee123"));
+            employeeUser.setEmployee(employee);
+            employeeUser.setEmail("employee@gmail.com");
+            employeeUser.setRole(Role.EMPLOYEE);
+            userRepository.save(employeeUser);
 
             System.out.println("✅ Đã tạo thành công tài khoản mặc định: username: admin | password: admin123");
         } else {

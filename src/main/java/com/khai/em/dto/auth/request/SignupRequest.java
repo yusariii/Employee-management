@@ -10,6 +10,9 @@ public class SignupRequest {
     @Positive(message = "employeeId must be positive")
     private Long employeeId;
 
+    @NotBlank(message = "email is mandatory")
+    private String email;
+
     @NotBlank(message = "username is mandatory")
     private String username;
 
@@ -22,6 +25,14 @@ public class SignupRequest {
 
     public void setEmployeeId(Long employeeId) {
         this.employeeId = employeeId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getUsername() {

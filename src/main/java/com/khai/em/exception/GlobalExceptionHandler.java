@@ -15,11 +15,16 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import org.springframework.security.access.AccessDeniedException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice 
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -95,6 +100,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleUnhandled(Exception ex) {
+        log.error("Unhandled exception", ex);
         Map<String, String> error = new HashMap<>();
         error.put("message", "Unexpected server error");
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

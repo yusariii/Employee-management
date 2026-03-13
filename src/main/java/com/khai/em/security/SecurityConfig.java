@@ -45,7 +45,7 @@ public class SecurityConfig {
             
             // 3. Ban hành thiết quân luật cho các đường dẫn
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll() 
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
