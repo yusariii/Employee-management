@@ -92,3 +92,29 @@ curl -X POST http://localhost:8080/api/auth/login \
 ```
 
 Sau đó dùng token JWT (Bearer) để gọi các API còn lại.
+
+### Cấu hình SMTP (Gmail)
+
+Cấu hình mail nằm trong [src/main/resources/application.properties](src/main/resources/application.properties) và đọc từ biến môi trường:
+
+- `MAIL_USERNAME` (hoặc `EMAIL_USER`)
+- `MAIL_PASSWORD` (hoặc `EMAIL_PASS`) — khuyến nghị dùng **Gmail App Password**
+- `MAIL_FROM` (tuỳ chọn) — nếu không set thì mặc định dùng `MAIL_USERNAME`
+
+Với Gmail, bạn thường cần:
+
+1) Bật 2-Step Verification cho tài khoản Gmail
+2) Tạo App Password (16 ký tự) và dùng nó làm `MAIL_PASSWORD`
+
+Ví dụ `.env` (tham khảo file [.env.example](.env.example)):
+
+```env
+MAIL_USERNAME=your.email@gmail.com
+MAIL_PASSWORD=xxxx xxxx xxxx xxxx
+MAIL_FROM=Employee Management <your.email@gmail.com>
+```
+
+Gợi ý khi chạy local:
+
+- Nếu chạy bằng IDE/Maven: set env vars trong cấu hình Run.
+- Nếu chạy Docker Compose: truyền env vars vào container (tuỳ theo cách bạn chạy).
