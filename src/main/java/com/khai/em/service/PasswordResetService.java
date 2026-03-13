@@ -9,10 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.khai.em.dto.auth.request.ChangePasswordRequest;
 import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
 import com.khai.em.entity.PasswordResetOtp;
@@ -41,6 +44,9 @@ public class PasswordResetService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String fromEmail;
@@ -74,7 +80,7 @@ public class PasswordResetService {
         otpEntity.setCreatedAt(now);
         otpEntity.setExpiresAt(now.plus(OTP_TTL));
         otpEntity.setConsumedAt(null);
-
+        auditLogService.log("Forgot", "Password", user.getId(), "An OTP was issued for password reset");
         otpEntity = passwordResetOtpRepository.save(otpEntity);
 
         try {
@@ -125,6 +131,7 @@ public class PasswordResetService {
 
         // Strategy B: remove all OTP records for this user.
         passwordResetOtpRepository.deleteByUser_Id(user.getId());
+        auditLogService.log("Reset", "Password", user.getId(), "Password reset successfully");
     }
 
     private void sendOtpEmail(String toEmail, String otp, LocalDateTime expiresAt) {
@@ -145,5 +152,33 @@ public class PasswordResetService {
 
     private String normalizeEmail(String email) {
         return email == null ? "" : email.trim().toLowerCase();
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new IllegalStateException("Unauthorized");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password confirmation does not match");
+        }
+
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        auditLogService.log("Change", "Password", user.getId(), "Password changed successfully");
     }
 }

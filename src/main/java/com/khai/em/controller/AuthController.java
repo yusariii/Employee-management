@@ -125,30 +125,7 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
-        }
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Password confirmation does not match"));
-        }
-
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Current password is incorrect"));
-        }
-
-        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: New password must be different"));
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
-
+        passwordResetService.changePassword(request);
         return ResponseEntity.ok(new MessageResponse("Password has been changed successfully"));
     }
 }
