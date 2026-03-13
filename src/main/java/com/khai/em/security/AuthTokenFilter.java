@@ -46,7 +46,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            System.out.println("Lỗi xác thực tại chốt gác: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
 
         filterChain.doFilter(request, response);

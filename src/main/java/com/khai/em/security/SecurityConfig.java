@@ -33,7 +33,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Tắt bảo vệ CSRF (Do REST API dùng Token nên tính năng này của Web truyền thống không cần thiết)
+            // 1. Tắt CSRF (Do REST API dùng Token nên tính năng này của Web truyền thống không cần thiết)
             .csrf(csrf -> csrf.disable())
 
             .cors(cors -> {})
@@ -43,14 +43,14 @@ public class SecurityConfig {
 
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             
-            // 3. Ban hành thiết quân luật cho các đường dẫn
+            // 3. Quy tắc cấp phép: Cho phép ai được vào API nào
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
 
-        // 4. Bổ nhiệm anh bảo vệ: Đứng gác ngay trước cổng chính của Spring Security để soát vé (Token)
+        // 4. Thêm chốt gác JWT vào trước chốt gác xác thực username/password mặc định của Spring Security
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -24,11 +24,9 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Kiểm tra xem trong DB đã có tài khoản nào chưa
         if (userRepository.count() == 0) {
             System.out.println("🌱 Database trống! Bắt đầu gieo hạt dữ liệu Admin đầu tiên...");
 
-            // ADMIN
             Employee adminEmployee = new Employee();
             adminEmployee.setName("Le Nguyen Khai");
             adminEmployee.setDepartment("GOD");
@@ -43,7 +41,6 @@ public class DatabaseSeeder implements CommandLineRunner {
             adminUser.setRole(Role.ADMIN);
             userRepository.save(adminUser);
 
-            // MANAGER
             Employee managerEmployee = new Employee();
             managerEmployee.setName("Nguyen Van A");
             managerEmployee.setDepartment("MANAGEMENT");
@@ -58,7 +55,6 @@ public class DatabaseSeeder implements CommandLineRunner {
             managerUser.setEmail("manager@gmail.com");
             userRepository.save(managerUser);
 
-            // EMPLOYEE
             Employee employee = new Employee();
             employee.setName("Tran Thi B");
             employee.setDepartment("SALES");
@@ -73,9 +69,11 @@ public class DatabaseSeeder implements CommandLineRunner {
             employeeUser.setRole(Role.EMPLOYEE);
             userRepository.save(employeeUser);
 
-            System.out.println("✅ Đã tạo thành công tài khoản mặc định: username: admin | password: admin123");
+            System.out.println("username: admin | password: admin123");
+            System.out.println("username: manager | password: manager123");
+            System.out.println("username: employee | password: employee123");
         } else {
-            System.out.println("🌳 Database đã có dữ liệu. Bỏ qua bước gieo hạt.");
+            System.out.println("Database đã có dữ liệu!");
         }
     }
 }
