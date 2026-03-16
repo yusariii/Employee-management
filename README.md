@@ -97,8 +97,8 @@ Sau đó dùng token JWT (Bearer) để gọi các API còn lại.
 
 Cấu hình mail nằm trong [src/main/resources/application.properties](src/main/resources/application.properties) và đọc từ biến môi trường:
 
-- `MAIL_USERNAME` (hoặc `EMAIL_USER`)
-- `MAIL_PASSWORD` (hoặc `EMAIL_PASS`) — khuyến nghị dùng **Gmail App Password**
+- `EMAIL_USER`
+- `EMAIL_PASS` — khuyến nghị dùng **Gmail App Password**
 - `MAIL_FROM` (tuỳ chọn) — nếu không set thì mặc định dùng `MAIL_USERNAME`
 
 Với Gmail, bạn thường cần:
