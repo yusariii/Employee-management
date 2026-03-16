@@ -58,7 +58,7 @@ docker compose up -d --build
 mvn spring-boot:run
 ```
 
-Nếu MySQL local của bạn không giống cấu hình mặc định, chạy kiểu override:
+Nếu MySQL không giống cấu hình mặc định, thay đổi trong [src/main/resources/application.properties](src/main/resources/application.properties):
 
 ```bash
 SPRING_DATASOURCE_URL="jdbc:mysql://localhost:3307/employee_db" \

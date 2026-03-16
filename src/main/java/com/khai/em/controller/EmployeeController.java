@@ -109,8 +109,4 @@ public class EmployeeController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/Error")
-    public ResponseEntity<?> error(){
-        return ResponseEntity.status(500).body("Internal Server Error");
-    }
 }
