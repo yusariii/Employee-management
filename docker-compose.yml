@@ -6,9 +6,8 @@ services:
     image: mysql:8.0
     container_name: hr_database_container
     environment:
-      # Bạn đổi tên database hr_db thành tên mà bạn đang dùng trong application.properties nhé
       MYSQL_DATABASE: employee_db
-      MYSQL_ROOT_PASSWORD: root # Đặt pass root cho MySQL trong container
+      MYSQL_ROOT_PASSWORD: root # Đặt mật khẩu root cho MySQL (bắt buộc phải có)
     ports:
       # Mapping cổng: Ánh xạ cổng 3307 của máy bạn vào cổng 3306 của container 
       # (Dùng 3307 để không bị đụng hàng với MySQL XAMPP đang chạy trên máy bạn)
@@ -23,12 +22,11 @@ services:
     ports:
       - "8080:8080" # Mở cửa 8080 ra ngoài
     depends_on:
-      - mysql-db # Bắt buộc phải chờ ông mysql-db khởi động xong thì app mới được chạy
+      - mysql-db # Bắt buộc phải chờ mysql-db khởi động xong thì app mới được chạy
     env_file:
       - .env
     environment:
-      # ĐÂY LÀ PHÉP THUẬT: Ghi đè file application.properties của bạn bằng biến môi trường!
-      # Thay vì localhost, chúng ta trỏ thẳng tên host là tên của container MySQL (mysql-db)
+      # Ghi đè file application.properties bằng biến môi trường!
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/employee_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
