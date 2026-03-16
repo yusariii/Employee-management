@@ -24,9 +24,39 @@ public class AuditLogService {
 
     public void log(String action, String entityType, Long entityId, String details){
         User actorUser = currentUserService.requireCurrentUser();
-        String actorUsername = actorUser.getUsername();
-        String actorRole = actorUser.getRole().toString();
+        writeLog(action, actorUser.getUsername(), actorUser.getRole().toString(), entityType, entityId, details);
+    }
 
+    /**
+     * Log an action without requiring an authenticated user (e.g. forgot/reset password).
+     */
+    public void logPublic(String action, String entityType, Long entityId, String details) {
+        writeLog(action, "ANONYMOUS", "PUBLIC", entityType, entityId, details);
+    }
+
+    /**
+     * Log an action without requiring an authenticated user, but still record a known actor.
+     * Useful for flows like reset-password where the account is identified by email/OTP.
+     */
+    public void logPublic(String action, User actorUser, String entityType, Long entityId, String details) {
+        if (actorUser == null) {
+            logPublic(action, entityType, entityId, details);
+            return;
+        }
+
+        String actorUsername = actorUser.getUsername() != null ? actorUser.getUsername() : "UNKNOWN";
+        String actorRole = actorUser.getRole() != null ? actorUser.getRole().toString() : "UNKNOWN";
+        writeLog(action, actorUsername, actorRole, entityType, entityId, details);
+    }
+
+    private void writeLog(
+            String action,
+            String actorUsername,
+            String actorRole,
+            String entityType,
+            Long entityId,
+            String details
+    ) {
         AuditLog logEntry = new AuditLog();
         logEntry.setAction(action);
         logEntry.setActorUsername(actorUsername);
@@ -35,7 +65,6 @@ public class AuditLogService {
         logEntry.setEntityId(entityId);
         logEntry.setDetails(details);
         auditLogRepository.save(logEntry);
-
     }
 
     public List<AuditLogResponse> getLatestLogs(Integer limit) {

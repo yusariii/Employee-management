@@ -80,7 +80,6 @@ public class PasswordResetService {
         otpEntity.setCreatedAt(now);
         otpEntity.setExpiresAt(now.plus(OTP_TTL));
         otpEntity.setConsumedAt(null);
-        auditLogService.log("Forgot", "Password", user.getId(), "An OTP was issued for password reset");
         otpEntity = passwordResetOtpRepository.save(otpEntity);
 
         try {
@@ -131,7 +130,7 @@ public class PasswordResetService {
 
         // Strategy B: remove all OTP records for this user.
         passwordResetOtpRepository.deleteByUser_Id(user.getId());
-        auditLogService.log("Reset", "Password", user.getId(), "Password reset successfully");
+        auditLogService.logPublic("Reset", user, "Password", user.getId(), "Password reset successfully");
     }
 
     private void sendOtpEmail(String toEmail, String otp, LocalDateTime expiresAt) {
