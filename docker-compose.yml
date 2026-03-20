@@ -15,6 +15,12 @@ services:
     volumes:
       - db_data:/var/lib/mysql # Tạo ổ cứng ảo để tắt máy không bị mất sạch dữ liệu
 
+  redis-db:
+    image: redis:7-alpine
+    container_name: hr_redis_container
+    ports:
+      - "6379:6379"
+
   # 2. Container cho Backend Spring Boot của bạn
   backend-app:
     build: . # Bảo Docker nhìn vào file Dockerfile ở thư mục hiện tại để tự build image
@@ -23,6 +29,7 @@ services:
       - "8080:8080" # Mở cửa 8080 ra ngoài
     depends_on:
       - mysql-db # Bắt buộc phải chờ mysql-db khởi động xong thì app mới được chạy
+      - redis-db
     env_file:
       - .env
     environment:
@@ -31,6 +38,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update # Tự động tạo bảng nếu chưa có
+      SPRING_DATA_REDIS_HOST: redis-db
+      SPRING_DATA_REDIS_PORT: 6379
 
 volumes:
   db_data:

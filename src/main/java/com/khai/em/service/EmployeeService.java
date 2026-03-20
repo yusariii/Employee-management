@@ -7,6 +7,9 @@ import com.khai.em.dto.employee.response.EmployeeDTO;
 import com.khai.em.entity.Employee;
 import com.khai.em.repository.EmployeeRepository;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,6 +43,7 @@ public class EmployeeService {
         return employees.map(emp -> new EmployeeDTO(emp.getId(), emp.getName(), emp.getDepartment()));
     }
 
+    @Cacheable(value = "employees", key = "#id")
     public Employee getEmployeeById(Long id) {
         return employeeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
@@ -52,6 +56,7 @@ public class EmployeeService {
         return employeeRepository.save(employee);
     }
 
+    @CachePut(value = "employees", key = "#id")
     public Employee updateEmployee(Long id, Employee employee) {
         Employee exist = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));

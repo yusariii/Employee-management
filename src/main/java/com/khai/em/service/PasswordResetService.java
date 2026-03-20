@@ -1,12 +1,13 @@
 package com.khai.em.service;
 
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
@@ -18,17 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.khai.em.dto.auth.request.ChangePasswordRequest;
 import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
-import com.khai.em.entity.PasswordResetOtp;
 import com.khai.em.entity.User;
-import com.khai.em.repository.PasswordResetOtpRepository;
 import com.khai.em.repository.UserRepository;
 
 @Service
 public class PasswordResetService {
 
-    private static final Duration OTP_TTL = Duration.ofMinutes(5);
-    private static final Duration OTP_RATE_LIMIT_WINDOW = Duration.ofMinutes(15);
-    private static final int OTP_RATE_LIMIT_MAX = 3;
+    private static final int OTP_TTL_MINUTES = 5;
     private static final int OTP_MAX_ATTEMPTS = 5;
 
     private final SecureRandom secureRandom = new SecureRandom();
@@ -37,7 +34,7 @@ public class PasswordResetService {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordResetOtpRepository passwordResetOtpRepository;
+    private StringRedisTemplate redisTemplate;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -60,35 +57,16 @@ public class PasswordResetService {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        long recentCount = passwordResetOtpRepository.countByUser_IdAndCreatedAtAfter(
-                user.getId(),
-                now.minus(OTP_RATE_LIMIT_WINDOW));
-
-        if (recentCount >= OTP_RATE_LIMIT_MAX) {
-            return;
-        }
-
-        // Strategy B: always remove old OTP records for this user.
-        passwordResetOtpRepository.deleteByUser_Id(user.getId());
-
         String otp = generateOtp6Digits();
-        PasswordResetOtp otpEntity = new PasswordResetOtp();
-        otpEntity.setUser(user);
-        otpEntity.setOtpHash(passwordEncoder.encode(otp));
-        otpEntity.setAttempts(0);
-        otpEntity.setCreatedAt(now);
-        otpEntity.setExpiresAt(now.plus(OTP_TTL));
-        otpEntity.setConsumedAt(null);
-        otpEntity = passwordResetOtpRepository.save(otpEntity);
+        String otpHash = passwordEncoder.encode(otp);
 
-        try {
-            sendOtpEmail(email, otp, otpEntity.getExpiresAt());
-        } catch (MailException ex) {
-            // Rollback OTP issuance if email cannot be sent.
-            passwordResetOtpRepository.deleteById(otpEntity.getId());
-            throw ex;
-        }
+        String otpKey = "otp:" + email;
+        String attemptKey = "otp_attempts:" + email;
+
+        redisTemplate.opsForValue().set(otpKey, otpHash, OTP_TTL_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(attemptKey, "0", OTP_TTL_MINUTES, TimeUnit.MINUTES);
+
+        sendOtpEmail(email, otp, LocalDateTime.now().plusMinutes(OTP_TTL_MINUTES));
     }
 
     @Transactional
@@ -100,36 +78,31 @@ public class PasswordResetService {
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("OTP invalid or expired"));
+                .orElseThrow(() -> new IllegalArgumentException("Email not found"));
 
-        LocalDateTime now = LocalDateTime.now();
-        PasswordResetOtp otpEntity = passwordResetOtpRepository
-                .findTopByUser_IdAndConsumedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(user.getId(), now)
-                .orElseThrow(() -> new IllegalArgumentException("OTP invalid or expired"));
+        String otpKey = "otp:" + email;
+        String attemptKey = "otp_attempts:" + email;
 
-        if (otpEntity.getAttempts() >= OTP_MAX_ATTEMPTS) {
-            // Strategy B: delete all old OTP records.
-            passwordResetOtpRepository.deleteByUser_Id(user.getId());
-            throw new IllegalArgumentException("OTP invalid or expired");
+        String otpHash = redisTemplate.opsForValue().get(otpKey);
+        if (otpHash == null) {
+            throw new IllegalArgumentException("OTP expired or not found");
         }
 
-        boolean matches = passwordEncoder.matches(request.getOtp(), otpEntity.getOtpHash());
-        if (!matches) {
-            otpEntity.setAttempts(otpEntity.getAttempts() + 1);
-            passwordResetOtpRepository.save(otpEntity);
+        Long attempts = redisTemplate.opsForValue().increment(attemptKey);
+        if (attempts != null && attempts > OTP_MAX_ATTEMPTS) {
+            redisTemplate.delete(Arrays.asList(otpKey, attemptKey));
+            throw new IllegalArgumentException("Maximum OTP attempts exceeded");
+        }
 
-            if (otpEntity.getAttempts() >= OTP_MAX_ATTEMPTS) {
-                passwordResetOtpRepository.deleteByUser_Id(user.getId());
-            }
-
-            throw new IllegalArgumentException("OTP invalid or expired");
+        if (!passwordEncoder.matches(request.getOtp(), otpHash)) {
+            throw new IllegalArgumentException("Invalid OTP");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // Strategy B: remove all OTP records for this user.
-        passwordResetOtpRepository.deleteByUser_Id(user.getId());
+        redisTemplate.delete(Arrays.asList(otpKey, attemptKey));
+
         auditLogService.logPublic("Reset", user, "Password", user.getId(), "Password reset successfully");
     }
 
@@ -140,7 +113,8 @@ public class PasswordResetService {
         }
         message.setTo(toEmail);
         message.setSubject("Password reset OTP");
-        message.setText("Your OTP is: " + otp + "\n\nExpires at: " + expiresAt + "\n\nIf you did not request this, please ignore this email.");
+        message.setText("Your OTP is: " + otp + "\n\nExpires at: " + expiresAt
+                + "\n\nIf you did not request this, please ignore this email.");
         mailSender.send(message);
     }
 
