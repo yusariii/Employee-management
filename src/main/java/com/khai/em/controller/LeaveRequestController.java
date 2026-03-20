@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import com.khai.em.dto.common.response.MessageResponse;
 import com.khai.em.dto.leave.request.LeaveRequestCreateRequest;
 import com.khai.em.dto.leave.response.LeaveRequestResponse;
 import com.khai.em.service.LeaveRequestService;
@@ -75,6 +76,6 @@ public class LeaveRequestController {
     @DeleteMapping("/{leaveRequestId}")
     public ResponseEntity<?> deleteLeaveRequest(@PathVariable @Positive Long leaveRequestId) {
         leaveRequestService.deleteLeaveRequest(leaveRequestId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new MessageResponse("Leave request deleted successfully"));
     }
 }

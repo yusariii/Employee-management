@@ -33,20 +33,24 @@ public class PayrollController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping
     public ResponseEntity<List<PayrollResponse>> getEmployeePayroll(
-        @RequestParam(name = "month", defaultValue = "#{T(java.time.LocalDate).now().getMonthValue()}") @Min(1) @Max(12) int month,
-        @RequestParam(name = "year", defaultValue = "#{T(java.time.LocalDate).now().getYear()}") @Min(1) int year
+        @RequestParam(name = "month", required = false) @Min(1) @Max(12) Integer month,
+        @RequestParam(name = "year", required = false) @Min(1) Integer year
     ) {
-        List<PayrollResponse> response = payrollService.getByMonth(month, year);
+        int m = (month != null) ? month : java.time.LocalDate.now().getMonthValue();
+        int y = (year != null) ? year : java.time.LocalDate.now().getYear();
+        List<PayrollResponse> response = payrollService.getByMonth(m, y);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     @GetMapping("/me")
     public ResponseEntity<List<PayrollResponse>> getMyPayroll(
-        @RequestParam(name = "month", defaultValue = "#{T(java.time.LocalDate).now().getMonthValue()}") @Min(1) @Max(12) Integer month,
-        @RequestParam(name = "year", defaultValue = "#{T(java.time.LocalDate).now().getYear()}") @Min(1) Integer year
+        @RequestParam(name = "month", required = false) @Min(1) @Max(12) Integer month,
+        @RequestParam(name = "year", required = false) @Min(1) Integer year
     ) {
-        List<PayrollResponse> response = payrollService.getMyPayroll(month, year);
+        int m = (month != null) ? month : java.time.LocalDate.now().getMonthValue();
+        int y = (year != null) ? year : java.time.LocalDate.now().getYear();
+        List<PayrollResponse> response = payrollService.getMyPayroll(m, y);
         return ResponseEntity.ok(response);
     }
 
@@ -54,10 +58,12 @@ public class PayrollController {
     @PostMapping("/{employeeId}/generate")
     public ResponseEntity<PayrollResponse> generatePayroll(
         @PathVariable @Positive Long employeeId,
-        @RequestParam(name = "month", defaultValue = "#{T(java.time.LocalDate).now().getMonthValue()}") @Min(1) @Max(12) int month,
-        @RequestParam(name = "year", defaultValue = "#{T(java.time.LocalDate).now().getYear()}") @Min(1) int year
+        @RequestParam(name = "month", required = false) @Min(1) @Max(12) Integer month,
+        @RequestParam(name = "year", required = false) @Min(1) Integer year
     ) {
-        PayrollResponse response = payrollService.generateForEmployee(employeeId, month, year);
+        int m = (month != null) ? month : java.time.LocalDate.now().getMonthValue();
+        int y = (year != null) ? year : java.time.LocalDate.now().getYear();
+        PayrollResponse response = payrollService.generateForEmployee(employeeId, m, y);
         return ResponseEntity.ok(response);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.khai.em.dto.common.response.MessageResponse;
 import com.khai.em.dto.employee.response.EmployeeDTO;
 import com.khai.em.entity.Employee;
 import com.khai.em.security.UserDetailsImpl;
@@ -106,7 +107,7 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable @Positive(message = "id must be positive") Long id){
         employeeService.deleteEmployee(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new MessageResponse("Employee deleted successfully"));
     }
 
 }

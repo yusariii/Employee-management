@@ -45,7 +45,15 @@ public class SecurityConfig {
             
             // 3. Quy tắc cấp phép: Cho phép ai được vào API nào
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                .requestMatchers("/api/auth/login", 
+                "/api/auth/register", 
+                "/api/auth/forgot-password", 
+                "/api/auth/reset-password",
+                "/v3/api-docs",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
+            ).permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );

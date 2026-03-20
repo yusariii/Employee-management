@@ -2,7 +2,7 @@ package com.khai.em.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
@@ -20,7 +20,7 @@ public class Employee {
     @NotBlank(message = "department is mandatory")
     private String department;
 
-    @Min(value = 0, message = "Salary must be non-negative")
+    @DecimalMin(value = "0", message = "Salary must be non-negative")
     private Double salary;
 
     public Employee() {
