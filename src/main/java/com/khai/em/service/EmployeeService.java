@@ -49,6 +49,9 @@ public class EmployeeService {
     }
 
     public Employee createEmployee(Employee employee) {
+        if (employee.getSalary() == null) {
+            throw new IllegalArgumentException("Salary is mandatory");
+        }
         if (employee.getSalary() < 0) {
             throw new IllegalArgumentException("Salary must be non-negative");
         }

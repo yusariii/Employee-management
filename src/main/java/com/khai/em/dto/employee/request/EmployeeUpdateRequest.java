@@ -1,38 +1,26 @@
-package com.khai.em.entity;
+package com.khai.em.dto.employee.request;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Pattern;
 
-import jakarta.persistence.*;
+public class EmployeeUpdateRequest {
 
-@Entity
-@Table(name = "employees")
-public class Employee {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @Pattern(regexp = ".*\\S.*", message = "name must not be blank")
     private String name;
 
+    @Pattern(regexp = ".*\\S.*", message = "department must not be blank")
     private String department;
 
+    @DecimalMin(value = "0", message = "Salary must be non-negative")
     private Double salary;
 
-    public Employee() {
+    public EmployeeUpdateRequest() {
     }
 
-    public Employee(String name, String department, Double salary) {
+    public EmployeeUpdateRequest(String name, String department, Double salary) {
         this.name = name;
         this.department = department;
         this.salary = salary;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {

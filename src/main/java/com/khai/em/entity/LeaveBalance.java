@@ -11,7 +11,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(
@@ -26,7 +25,6 @@ public class LeaveBalance {
 
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
-    @NotNull(message = "employee is mandatory")
     private Employee employee;
 
     @Column(nullable = false)
@@ -34,7 +32,6 @@ public class LeaveBalance {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "leave_type", nullable = false)
-    @NotNull(message = "leaveType is mandatory")
     private LeaveType leaveType;
 
     @Column(nullable = false)

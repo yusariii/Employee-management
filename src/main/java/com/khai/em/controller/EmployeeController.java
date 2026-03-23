@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.khai.em.dto.common.response.MessageResponse;
+import com.khai.em.dto.employee.request.EmployeeCreateRequest;
+import com.khai.em.dto.employee.request.EmployeeUpdateRequest;
 import com.khai.em.dto.employee.response.EmployeeDTO;
 import com.khai.em.entity.Employee;
 import com.khai.em.security.UserDetailsImpl;
@@ -83,8 +85,9 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Employee employee){
+    public ResponseEntity<?> create(@Valid @RequestBody EmployeeCreateRequest request){
         try {
+            Employee employee = new Employee(request.getName(), request.getDepartment(), request.getSalary());
             employeeService.createEmployee(employee);
             return ResponseEntity.ok(employee);
         } catch (IllegalArgumentException e) {
@@ -94,8 +97,12 @@ public class EmployeeController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable @Positive(message = "id must be positive") Long id,@Valid @RequestBody Employee employee){
+    public ResponseEntity<?> update(@PathVariable @Positive(message = "id must be positive") Long id, @Valid @RequestBody EmployeeUpdateRequest request){
         try {
+            Employee employee = new Employee();
+            employee.setName(request.getName());
+            employee.setDepartment(request.getDepartment());
+            employee.setSalary(request.getSalary());
             Employee updated = employeeService.updateEmployee(id, employee);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {

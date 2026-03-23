@@ -10,8 +10,6 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.Column;
 
 @Entity
@@ -22,24 +20,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "employee is mandatory")
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = false, unique = true)
     private Employee employee;
 
-    @NotBlank(message = "email is mandatory")
     @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank(message = "username is mandatory")
     @Column(nullable = false, unique = true)
     private String username;
 
-    @NotBlank(message = "password is mandatory")
     @Column(nullable = false)
     private String password;
 
-    @NotNull(message = "role is mandatory")
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;

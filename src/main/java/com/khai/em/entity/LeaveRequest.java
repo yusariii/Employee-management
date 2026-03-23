@@ -11,8 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "leave_requests")
@@ -22,16 +20,12 @@ public class LeaveRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "reason is mandatory")
     private String reason;
 
-    @NotNull(message = "startDate is mandatory")
     private LocalDate startDate;
 
-    @NotNull(message = "endDate is mandatory")
     private LocalDate endDate;
 
-    @NotNull(message = "status is mandatory")
     @Enumerated(EnumType.STRING)
     private LeaveStatus status;
 

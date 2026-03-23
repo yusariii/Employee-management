@@ -5,11 +5,13 @@ import java.time.LocalDate;
 import com.khai.em.entity.LeaveType;
 
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class LeaveRequestCreateRequest {
 
+    @NotBlank(message = "reason is mandatory")
     @Size(max = 1000, message = "Reason must be at most 1000 characters")
     private String reason;
 

@@ -1,5 +1,6 @@
 package com.khai.em.dto.auth.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -10,6 +11,7 @@ public class SignupRequest {
     @Positive(message = "employeeId must be positive")
     private Long employeeId;
 
+    @Email(message = "email must be a valid email address")
     @NotBlank(message = "email is mandatory")
     private String email;
 
