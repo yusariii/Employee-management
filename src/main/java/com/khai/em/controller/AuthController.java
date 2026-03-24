@@ -34,8 +34,8 @@ public class AuthController {
     private PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.authenticateUser(loginRequest));
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @GetMapping("/me")
@@ -50,9 +50,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
-            return ResponseEntity.ok(authService.registerUser(signUpRequest));
+            return ResponseEntity.ok(authService.register(signUpRequest));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
