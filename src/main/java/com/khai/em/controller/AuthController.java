@@ -2,13 +2,10 @@ package com.khai.em.controller;
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,15 +18,8 @@ import com.khai.em.dto.auth.request.SignupRequest;
 import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
 import com.khai.em.dto.auth.request.ChangePasswordRequest;
-import com.khai.em.dto.auth.response.AuthMeResponse;
-import com.khai.em.dto.auth.response.JwtResponse;
 import com.khai.em.dto.common.response.MessageResponse;
-import com.khai.em.entity.Employee;
-import com.khai.em.entity.Role;
-import com.khai.em.entity.User;
-import com.khai.em.repository.UserRepository;
-import com.khai.em.repository.EmployeeRepository;
-import com.khai.em.security.JwtUtils;
+import com.khai.em.service.AuthService;
 import com.khai.em.service.PasswordResetService;
 
 @RestController
@@ -38,32 +28,14 @@ import com.khai.em.service.PasswordResetService;
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtils jwtUtils;
+    private AuthService authService;
 
     @Autowired
     private PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        String jwt = jwtUtils.generateToken(loginRequest.getUsername());
-        return ResponseEntity.ok(new JwtResponse(jwt, loginRequest.getUsername()));
+        return ResponseEntity.ok(authService.authenticateUser(loginRequest));
     }
 
     @GetMapping("/me")
@@ -74,41 +46,16 @@ public class AuthController {
             return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
         }
 
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-
-        Long employeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
-        String role = user.getRole() != null ? user.getRole().name() : null;
-
-        return ResponseEntity.ok(new AuthMeResponse(user.getUsername(), role, employeeId));
+        return ResponseEntity.ok(authService.getMe(authentication.getName()));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.findByUsername(signUpRequest.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken"));
+        try {
+            return ResponseEntity.ok(authService.registerUser(signUpRequest));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
-        if (userRepository.existsByEmployee_Id(signUpRequest.getEmployeeId())){
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Employee already has an account"));
-        }
-        if (userRepository.existsByEmail(signUpRequest.getEmail())){
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use"));
-        }
-        Employee employee = employeeRepository.findById(signUpRequest.getEmployeeId()).orElse(null);
-        if (employee == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Employee not found"));
-        }
-
-        User user = new User();
-        user.setEmployee(employee);
-        user.setUsername(signUpRequest.getUsername());
-        user.setEmail(signUpRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-        user.setRole(Role.EMPLOYEE);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
     @PostMapping("/forgot-password")
