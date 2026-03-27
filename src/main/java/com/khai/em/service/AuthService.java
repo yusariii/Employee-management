@@ -1,6 +1,9 @@
 package com.khai.em.service;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,6 +23,8 @@ import com.khai.em.repository.EmployeeRepository;
 import com.khai.em.repository.UserRepository;
 import com.khai.em.security.JwtUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Service
 public class AuthService {
 
@@ -38,6 +43,9 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     public JwtResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -45,6 +53,14 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = jwtUtils.generateToken(loginRequest.getUsername());
+
+        String jti = jwtUtils.getJwtIdFromJwtToken(jwt);
+        long remainingTimeMs = jwtUtils.getExpirationDateFromJwtToken(jwt).getTime() - System.currentTimeMillis();
+        if (remainingTimeMs > 0) {
+            redisTemplate.opsForValue()
+                    .set("jwt:active:" + jti, loginRequest.getUsername(), remainingTimeMs, TimeUnit.MILLISECONDS);
+        }
+
         return new JwtResponse(jwt, loginRequest.getUsername());
     }
 
@@ -82,5 +98,20 @@ public class AuthService {
         userRepository.save(user);
 
         return new MessageResponse("User registered successfully");
+    }
+
+    public MessageResponse logout(HttpServletRequest request){
+        String headerAuth = request.getHeader("Authorization");
+        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            String token = headerAuth.substring(7);
+
+            try {
+                String jti = jwtUtils.getJwtIdFromJwtToken(token);
+                redisTemplate.delete("jwt:active:" + jti);
+            } catch (Exception ignored) {
+            }
+        }
+        SecurityContextHolder.clearContext();
+        return new MessageResponse("Logged out successfully");
     }
 }

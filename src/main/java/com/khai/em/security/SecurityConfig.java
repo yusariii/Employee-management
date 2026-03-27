@@ -33,17 +33,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Tắt CSRF (Do REST API dùng Token nên tính năng này của Web truyền thống không cần thiết)
+
             .csrf(csrf -> csrf.disable())
-
             .cors(cors -> {})
-            
-            // 2. Chế độ "Không nhớ mặt khách" (Stateless). Mỗi lần gọi API phải tự trình thẻ ra, server không nhớ ai cả.
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-            
-            // 3. Quy tắc cấp phép: Cho phép ai được vào API nào
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login", 
                 "/api/auth/register", 
@@ -58,7 +52,6 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
-        // 4. Thêm chốt gác JWT vào trước chốt gác xác thực username/password mặc định của Spring Security
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

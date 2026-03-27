@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.SecurityException;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -19,10 +20,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:NUN_NA_NA_NA_NA_ANH_DO_MI_XI___CHANGE_ME_TO_A_LONG_RANDOM_SECRET_64_CHARS_MINIMUM}")
+    @Value("${jwt.secret:}")
     private String jwtSecret;
 
-    @Value("${jwt.expirationMs:864000000}")
+    @Value("${jwt.expirationMs:}")
     private Long jwtExpirationMs;
 
     private Key key() {
@@ -31,11 +32,30 @@ public class JwtUtils {
 
     public String generateToken(String username) {
         return Jwts.builder()
+                .setId(UUID.randomUUID().toString())
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date().getTime() + jwtExpirationMs)))
                 .signWith(key(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public String getJwtIdFromJwtToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getId();
+    }
+
+    public Date getExpirationDateFromJwtToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
     }
 
     public String getUserNameFromJwtToken(String token){
@@ -63,5 +83,10 @@ public class JwtUtils {
             System.err.println("JWT claims string is empty: " + e.getMessage());
         }
         return false;
+    }
+
+    public java.sql.Date getExpirationFromJwtToken(String token) {
+        Date expiration = getExpirationDateFromJwtToken(token);
+        return new java.sql.Date(expiration.getTime());
     }
 }

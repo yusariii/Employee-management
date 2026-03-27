@@ -27,17 +27,10 @@ public class AuditLogService {
         writeLog(action, actorUser.getUsername(), actorUser.getRole().toString(), entityType, entityId, details);
     }
 
-    /**
-     * Log an action without requiring an authenticated user (e.g. forgot/reset password).
-     */
     public void logPublic(String action, String entityType, Long entityId, String details) {
         writeLog(action, "ANONYMOUS", "PUBLIC", entityType, entityId, details);
     }
 
-    /**
-     * Log an action without requiring an authenticated user, but still record a known actor.
-     * Useful for flows like reset-password where the account is identified by email/OTP.
-     */
     public void logPublic(String action, User actorUser, String entityType, Long entityId, String details) {
         if (actorUser == null) {
             logPublic(action, entityType, entityId, details);

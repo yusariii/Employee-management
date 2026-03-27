@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +27,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -33,6 +37,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String jwt = parseJwt(request);
 
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+
+                String jti = jwtUtils.getJwtIdFromJwtToken(jwt);
+                String activeKey = "jwt:active:" + jti;
+                if (Boolean.FALSE.equals(redisTemplate.hasKey(activeKey))) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is not active");
+                    return;
+                }
                 
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
 

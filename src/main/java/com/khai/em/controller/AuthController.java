@@ -1,5 +1,6 @@
 package com.khai.em.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,18 @@ public class AuthController {
             return ResponseEntity.ok(authService.register(signUpRequest));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getPrincipal().equals("anonymousUser")) {
+            authService.logout(request);
+            return ResponseEntity.ok(new MessageResponse("Logged out successfully"));
+        } else {
+            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
         }
     }
 
