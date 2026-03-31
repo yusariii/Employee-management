@@ -21,6 +21,18 @@ services:
     ports:
       - "6379:6379"
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: hr_phpmyadmin_container
+    ports:
+      - "8081:80" # Mở cổng 8081 để truy cập phpMyAdmin qua trình duyệt
+    environment:
+      PMA_HOST: mysql-db # Kết nối phpMyAdmin với MySQL container
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root # Cung cấp mật khẩu root để phpMyAdmin có thể kết nối
+    depends_on:
+      - mysql-db
+
   # 2. Container cho Backend Spring Boot của bạn
   backend-app:
     build: . # Bảo Docker nhìn vào file Dockerfile ở thư mục hiện tại để tự build image

@@ -47,6 +47,10 @@ public class AuthService {
     private StringRedisTemplate redisTemplate;
 
     public JwtResponse login(LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new IllegalStateException("User not found"));
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Error: Invalid password");
+        }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
@@ -75,7 +79,7 @@ public class AuthService {
     }
 
     public MessageResponse register(SignupRequest signUpRequest) {
-        if (userRepository.findByUsername(signUpRequest.getUsername()).isPresent()) {
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new IllegalArgumentException("Error: Username is already taken");
         }
         if (userRepository.existsByEmployee_Id(signUpRequest.getEmployeeId())) {
