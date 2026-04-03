@@ -32,8 +32,8 @@ public class LeaveBalanceService {
     private AuditLogService auditLogService;
 
     public LeaveBalanceResponse getMyBalances(int year){
-        User currentUser = currentUserService.requireCurrentUser();
-        Long employeeId = currentUser.getEmployee().getId();
+        User user = currentUserService.requireCurrentUser();
+        Long employeeId = user.getEmployee().getId();
 
         var leaveBalances = leaveBalanceRepository.findByEmployee_IdAndYear(employeeId, year);
 

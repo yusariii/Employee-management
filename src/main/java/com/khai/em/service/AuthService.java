@@ -21,6 +21,7 @@ import com.khai.em.entity.Role;
 import com.khai.em.entity.User;
 import com.khai.em.repository.EmployeeRepository;
 import com.khai.em.repository.UserRepository;
+import com.khai.em.security.CurrentUserService;
 import com.khai.em.security.JwtUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,11 +47,10 @@ public class AuthService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     public JwtResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new IllegalStateException("User not found"));
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Error: Invalid password");
-        }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
@@ -68,9 +68,8 @@ public class AuthService {
         return new JwtResponse(jwt, loginRequest.getUsername());
     }
 
-    public AuthMeResponse getMe(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
+    public AuthMeResponse getMe() {
+        User user = currentUserService.requireCurrentUser();
 
         Long employeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
         String role = user.getRole() != null ? user.getRole().name() : null;

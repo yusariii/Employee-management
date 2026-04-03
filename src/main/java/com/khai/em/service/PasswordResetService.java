@@ -21,6 +21,7 @@ import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
 import com.khai.em.entity.User;
 import com.khai.em.repository.UserRepository;
+import com.khai.em.security.CurrentUserService;
 
 @Service
 public class PasswordResetService {
@@ -44,6 +45,9 @@ public class PasswordResetService {
 
     @Autowired
     private AuditLogService auditLogService;
+
+    @Autowired
+    private CurrentUserService currentUserService;
 
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String fromEmail;
@@ -129,18 +133,11 @@ public class PasswordResetService {
 
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new IllegalStateException("Unauthorized");
-        }
+        User user = currentUserService.requireCurrentUser();
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new IllegalArgumentException("Password confirmation does not match");
         }
-
-        User user = userRepository.findByUsername(authentication.getName())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect");

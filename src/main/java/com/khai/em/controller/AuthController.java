@@ -41,13 +41,11 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized"));
+        try {
+            return ResponseEntity.ok(authService.getMe());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized: " + e.getMessage()));
         }
-
-        return ResponseEntity.ok(authService.getMe(authentication.getName()));
     }
 
     @PostMapping("/register")

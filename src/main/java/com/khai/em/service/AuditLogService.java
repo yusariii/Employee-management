@@ -24,7 +24,9 @@ public class AuditLogService {
 
     public void log(String action, String entityType, Long entityId, String details){
         User actorUser = currentUserService.requireCurrentUser();
-        writeLog(action, actorUser.getUsername(), actorUser.getRole().toString(), entityType, entityId, details);
+        String actorUsername = actorUser.getUsername() != null ? actorUser.getUsername() : "UNKNOWN";
+        String actorRole = actorUser.getRole() != null ? actorUser.getRole().toString() : "UNKNOWN";
+        writeLog(action, actorUsername, actorRole, entityType, entityId, details);
     }
 
     public void logPublic(String action, String entityType, Long entityId, String details) {
