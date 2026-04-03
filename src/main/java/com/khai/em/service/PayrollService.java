@@ -125,10 +125,6 @@ public class PayrollService {
         User user = currentUserService.requireCurrentUser();
         Employee employee = user.getEmployee();
 
-        if (employee == null || employee.getId() == null) {
-            throw new IllegalStateException("Current user is not associated with an employee");
-        }
-
         return payrollRepository.findByEmployee_IdAndMonthAndYear(employee.getId(), month, year)
                 .map(this::toResponse)
                 .stream()

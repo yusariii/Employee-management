@@ -128,10 +128,6 @@ public class LeaveRequestService {
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found"));
 
-        if (leaveRequest.getEmployee() == null || leaveRequest.getEmployee().getId() == null) {
-            throw new IllegalArgumentException("Leave request is not associated with an employee");
-        }
-
         if (!status.equalsIgnoreCase("APPROVED") && !status.equalsIgnoreCase("REJECTED")) {
             throw new IllegalArgumentException("Invalid status. Must be 'APPROVED' or 'REJECTED'");
         }
@@ -160,10 +156,6 @@ public class LeaveRequestService {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new IllegalArgumentException("Leave request not found"));
-
-        if (leaveRequest.getEmployee() == null || leaveRequest.getEmployee().getId() == null) {
-            throw new IllegalArgumentException("Leave request is not associated with an employee");
-        }
         if (!leaveRequest.getEmployee().getId().equals(employee.getId()) && user.getRole() == Role.EMPLOYEE) {
             throw new IllegalStateException("Current user is not the owner of this leave request");
         }
