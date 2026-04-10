@@ -41,20 +41,12 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
-        try {
-            return ResponseEntity.ok(authService.getMe());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(401).body(new MessageResponse("Unauthorized: " + e.getMessage()));
-        }
+        return ResponseEntity.ok(authService.getMe());
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody SignupRequest signUpRequest) {
-        try {
-            return ResponseEntity.ok(authService.register(signUpRequest));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
-        }
+        return ResponseEntity.ok(authService.register(signUpRequest));
     }
 
     @PostMapping("/logout")

@@ -18,7 +18,6 @@ import com.khai.em.dto.employee.request.EmployeeCreateRequest;
 import com.khai.em.dto.employee.request.EmployeeUpdateRequest;
 import com.khai.em.dto.employee.response.EmployeeDTO;
 import com.khai.em.entity.Employee;
-import com.khai.em.security.UserDetailsImpl;
 import com.khai.em.service.EmployeeService;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 
 
@@ -58,56 +55,34 @@ public class EmployeeController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable @Positive(message = "id must be positive") Long id){
-        try {
-            Employee emp = employeeService.getEmployeeById(id);
-            return ResponseEntity.ok(emp);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Employee emp = employeeService.getEmployeeById(id);
+        return ResponseEntity.ok(emp);
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<?> getMyProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long userId = userDetails.getId();
-        try {
-            Employee emp = employeeService.getEmployeeById(userId);
-            return ResponseEntity.ok(emp);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Employee emp = employeeService.getMyProfile();
+        return ResponseEntity.ok(emp);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody EmployeeCreateRequest request){
-        try {
-            Employee employee = new Employee(request.getName(), request.getDepartment(), request.getSalary());
-            employeeService.createEmployee(employee);
-            return ResponseEntity.ok(employee);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Employee employee = new Employee(request.getName(), request.getDepartment(), request.getSalary());
+        employeeService.createEmployee(employee);
+        return ResponseEntity.ok(employee);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable @Positive(message = "id must be positive") Long id, @Valid @RequestBody EmployeeUpdateRequest request){
-        try {
-            Employee employee = new Employee();
-            employee.setName(request.getName());
-            employee.setDepartment(request.getDepartment());
-            employee.setSalary(request.getSalary());
-            Employee updated = employeeService.updateEmployee(id, employee);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Employee employee = new Employee();
+        employee.setName(request.getName());
+        employee.setDepartment(request.getDepartment());
+        employee.setSalary(request.getSalary());
+        Employee updated = employeeService.updateEmployee(id, employee);
+        return ResponseEntity.ok(updated);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
