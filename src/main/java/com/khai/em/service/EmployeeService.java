@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 
 import com.khai.em.dto.employee.response.EmployeeDTO;
 import com.khai.em.entity.Employee;
+import com.khai.em.entity.User;
 import com.khai.em.repository.EmployeeRepository;
+import com.khai.em.security.CurrentUserService;
 
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,6 +31,9 @@ public class EmployeeService {
 
     @Autowired
     private AuditLogService auditLogService;
+
+    @Autowired
+    private CurrentUserService currentUserService;
 
     public Page<EmployeeDTO> getAllEmployeesPagiAndSort(String keyword, int page, int size, String sortBy,
             String sortDir) {
@@ -86,5 +91,15 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         auditLogService.log("DELETE", "EMPLOYEE", id, "Employee deleted");
         employeeRepository.deleteById(id);
+    }
+
+    public Employee getMyProfile(){
+        User user = currentUserService.requireCurrentUser();
+        if (user.getEmployee() == null || user.getEmployee().getId() == null) {
+            throw new IllegalStateException("Employee not linked to current user");
+        }
+        Long employeeId = user.getEmployee().getId();
+        return employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
 }
