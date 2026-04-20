@@ -24,7 +24,7 @@ public class CurrentUserService {
         }
 
         String username = authentication.getName();
-        if (username == null || username.isBlank() || "anonymousUser".equals(username)) {
+        if (username == null || username.isBlank()) {
             throw new IllegalStateException("No authenticated user found");
         }
 
