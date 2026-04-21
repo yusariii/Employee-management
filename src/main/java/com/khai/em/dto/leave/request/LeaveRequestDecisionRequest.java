@@ -5,6 +5,9 @@ import com.khai.em.entity.LeaveStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import lombok.Data;
+
+@Data
 public class LeaveRequestDecisionRequest {
     @NotNull(message = "status is mandatory")
     private LeaveStatus status;
@@ -17,22 +20,6 @@ public class LeaveRequestDecisionRequest {
 
     public LeaveRequestDecisionRequest(LeaveStatus status, String managerComment) {
         this.status = status;
-        this.managerComment = managerComment;
-    }
-
-    public LeaveStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(LeaveStatus status) {
-        this.status = status;
-    }
-
-    public String getManagerComment() {
-        return managerComment;
-    }
-
-    public void setManagerComment(String managerComment) {
         this.managerComment = managerComment;
     }
 }

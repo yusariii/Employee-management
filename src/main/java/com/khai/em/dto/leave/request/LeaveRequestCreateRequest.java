@@ -9,6 +9,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import lombok.Data;
+
+@Data
 public class LeaveRequestCreateRequest {
 
     @NotBlank(message = "reason is mandatory")
@@ -31,38 +34,6 @@ public class LeaveRequestCreateRequest {
         this.reason = reason;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.type = type;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public LeaveType getType() {
-        return type;
-    }
-
-    public void setType(LeaveType type) {
         this.type = type;
     }
 

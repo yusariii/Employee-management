@@ -4,6 +4,13 @@ import java.time.LocalDate;
 
 import com.khai.em.entity.LeaveStatus;
 import com.khai.em.entity.LeaveType;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class LeaveRequestResponse {
     private Long id;
     private String reason;
@@ -11,6 +18,8 @@ public class LeaveRequestResponse {
     private LocalDate endDate;
     private LeaveStatus status;
     private LeaveType type;
+
+    @Setter(AccessLevel.NONE)
     private int requestedDay;
     private Long employeeId;
     private String managerComment;
@@ -32,90 +41,6 @@ public class LeaveRequestResponse {
         this.employeeId = employeeId;
         this.managerComment = managerComment;
         this.decidedAt = decidedAt;
-        this.decidedBy = decidedBy;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public LeaveStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(LeaveStatus status) {
-        this.status = status;
-    }
-
-    public LeaveType getType() {
-        return type;
-    }
-
-    public void setType(LeaveType type) {
-        this.type = type;
-    }
-
-    public int getRequestedDay() {
-        return requestedDay;
-    }
-
-    public Long getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public String getManagerComment() {
-        return managerComment;
-    }
-
-    public void setManagerComment(String managerComment) {
-        this.managerComment = managerComment;
-    }
-
-    public LocalDate getDecidedAt() {
-        return decidedAt;
-    }
-
-    public void setDecidedAt(LocalDate decidedAt) {
-        this.decidedAt = decidedAt;
-    }
-
-    public String getDecidedBy() {
-        return decidedBy;
-    }
-
-    public void setDecidedBy(String decidedBy) {
         this.decidedBy = decidedBy;
     }
 }
