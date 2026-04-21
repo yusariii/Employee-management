@@ -34,6 +34,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, request.getRequestURI());
 
+        log.warn("Validation failed: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
+
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
@@ -50,6 +52,8 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, request.getRequestURI());
+
+        log.warn("Constraint violation: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -60,6 +64,8 @@ public class GlobalExceptionHandler {
         String message = name + ": must be a valid " + requiredType;
 
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, request.getRequestURI());
+
+        log.warn("Type mismatch: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -68,6 +74,8 @@ public class GlobalExceptionHandler {
         String message = ex.getParameterName() + ": Missing required parameter";
 
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message, request.getRequestURI());
+
+        log.warn("Missing request parameter: {} {} - {}", request.getMethod(), request.getRequestURI(), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
@@ -77,24 +85,32 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Invalid request body (malformed JSON or wrong Content-Type)",
                 request.getRequestURI());
+
+        log.warn("Invalid request body: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), request.getRequestURI());
+
+        log.warn("Illegal argument: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), request.getRequestURI());
+
+        log.warn("Illegal state: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(HttpStatus.FORBIDDEN.value(), "Access denied", request.getRequestURI());
+
+        log.warn("Access denied: {} {}", request.getMethod(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
@@ -104,12 +120,14 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNAUTHORIZED.value(),
                 "Invalid username or password",
                 request.getRequestURI());
+
+        log.warn("Authentication failed: {} {} - {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnhandled(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception", ex);
+        log.error("Unhandled exception: {} {}", request.getMethod(), request.getRequestURI(), ex);
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Unexpected server error",
