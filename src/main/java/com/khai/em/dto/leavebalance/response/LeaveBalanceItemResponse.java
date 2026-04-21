@@ -2,9 +2,11 @@ package com.khai.em.dto.leavebalance.response;
 
 import com.khai.em.entity.LeaveType;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class LeaveBalanceItemResponse {
     private LeaveType type;
     private int totalDays;

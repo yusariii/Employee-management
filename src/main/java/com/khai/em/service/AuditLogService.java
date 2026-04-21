@@ -1,6 +1,5 @@
 package com.khai.em.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.khai.em.entity.AuditLog;
@@ -14,13 +13,14 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-@Service
-public class AuditLogService {
-    @Autowired
-    private AuditLogRepository auditLogRepository;
+import lombok.RequiredArgsConstructor;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+@Service
+@RequiredArgsConstructor
+public class AuditLogService {
+    private final AuditLogRepository auditLogRepository;
+
+    private final CurrentUserService currentUserService;
 
     public void log(String action, String entityType, Long entityId, String details){
         User actorUser = currentUserService.requireCurrentUser();

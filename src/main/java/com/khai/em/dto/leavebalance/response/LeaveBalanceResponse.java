@@ -2,9 +2,11 @@ package com.khai.em.dto.leavebalance.response;
 
 import java.util.List;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class LeaveBalanceResponse {
     private int year;
     private List<LeaveBalanceItemResponse> items;

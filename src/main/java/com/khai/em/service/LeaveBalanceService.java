@@ -1,6 +1,5 @@
 package com.khai.em.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,19 +16,18 @@ import com.khai.em.entity.LeaveType;
 
 import java.time.Year;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class LeaveBalanceService {
-    @Autowired
-    private LeaveBalanceRepository leaveBalanceRepository;
+    private final LeaveBalanceRepository leaveBalanceRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+    private final CurrentUserService currentUserService;
 
-    @Autowired  
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
     public LeaveBalanceResponse getMyBalances(int year){
         User user = currentUserService.requireCurrentUser();

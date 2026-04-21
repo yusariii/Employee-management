@@ -5,9 +5,11 @@ import com.khai.em.entity.LeaveStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class LeaveRequestDecisionRequest {
     @NotNull(message = "status is mandatory")
     private LeaveStatus status;

@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,22 +19,20 @@ import com.khai.em.repository.LeaveRequestRepository;
 import com.khai.em.repository.PayrollRepository;
 import com.khai.em.security.CurrentUserService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PayrollService {
-    @Autowired
-    private PayrollRepository payrollRepository;
+    private final PayrollRepository payrollRepository;
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+    private final CurrentUserService currentUserService;
 
-    @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
 
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
     private PayrollResponse toResponse(Payroll payroll) {
         return new PayrollResponse(

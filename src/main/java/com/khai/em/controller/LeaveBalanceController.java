@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.khai.em.dto.leavebalance.request.LeaveBalanceUpsertRequest;
@@ -25,14 +24,16 @@ import com.khai.em.dto.leavebalance.response.LeaveBalanceResponse;
 import com.khai.em.service.LeaveBalanceService;
 import org.springframework.validation.annotation.Validated;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/leave-balances")
 @CrossOrigin(origins = "*")
 @Validated
+@RequiredArgsConstructor
 public class LeaveBalanceController {
 
-    @Autowired
-    private LeaveBalanceService leaveBalanceService;
+    private final LeaveBalanceService leaveBalanceService;
     
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     @GetMapping("/me")

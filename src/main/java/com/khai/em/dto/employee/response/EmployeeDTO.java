@@ -1,8 +1,10 @@
 package com.khai.em.dto.employee.response;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EmployeeDTO {
     private Long id;
     private String name;

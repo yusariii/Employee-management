@@ -3,7 +3,6 @@ package com.khai.em.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,15 +25,17 @@ import com.khai.em.dto.leave.request.LeaveRequestCreateRequest;
 import com.khai.em.dto.leave.response.LeaveRequestResponse;
 import com.khai.em.service.LeaveRequestService;
 
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/leave-requests")
 @CrossOrigin(origins = "*")
 @Validated
+@RequiredArgsConstructor
 public class LeaveRequestController {
 
-    @Autowired
-    private LeaveRequestService leaveRequestService;
+    private final LeaveRequestService leaveRequestService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping

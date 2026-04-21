@@ -1,6 +1,5 @@
 package com.khai.em.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,20 +20,19 @@ import com.khai.em.entity.User;
 import com.khai.em.repository.LeaveRequestRepository;
 import com.khai.em.security.CurrentUserService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class LeaveRequestService {
 
-    @Autowired
-    private LeaveRequestRepository leaveRequestRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+    private final CurrentUserService currentUserService;
 
-    @Autowired
-    private LeaveBalanceService leaveBalanceService;
+    private final LeaveBalanceService leaveBalanceService;
 
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
     private LeaveRequestResponse toResponse(LeaveRequest lr) {
         Long employeeId = lr.getEmployee() != null ? lr.getEmployee().getId() : null;

@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,15 +28,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/employees")
 @CrossOrigin(origins = "*")
 @Validated
+@RequiredArgsConstructor
 public class EmployeeController {
     
-    @Autowired
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping

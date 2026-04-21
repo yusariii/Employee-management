@@ -4,7 +4,6 @@ import java.util.List;
 
 import jakarta.validation.constraints.Positive;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,13 +16,15 @@ import org.springframework.validation.annotation.Validated;
 import com.khai.em.dto.audit.response.AuditLogResponse;
 import com.khai.em.service.AuditLogService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/audit-logs")
 @CrossOrigin(origins = "*")
 @Validated
+@RequiredArgsConstructor
 public class AuditLogController {
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @GetMapping

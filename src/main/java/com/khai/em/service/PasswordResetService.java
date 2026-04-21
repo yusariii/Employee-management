@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -21,7 +20,10 @@ import com.khai.em.entity.User;
 import com.khai.em.repository.UserRepository;
 import com.khai.em.security.CurrentUserService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PasswordResetService {
 
     private static final int OTP_TTL_MINUTES = 5;
@@ -29,23 +31,17 @@ public class PasswordResetService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+    private final CurrentUserService currentUserService;
 
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String fromEmail;

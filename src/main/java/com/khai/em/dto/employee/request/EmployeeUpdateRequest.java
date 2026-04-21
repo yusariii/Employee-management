@@ -3,9 +3,11 @@ package com.khai.em.dto.employee.request;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Pattern;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class EmployeeUpdateRequest {
 
     @Pattern(regexp = ".*\\S.*", message = "name must not be blank")

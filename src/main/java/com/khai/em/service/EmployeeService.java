@@ -1,6 +1,5 @@
 package com.khai.em.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.khai.em.dto.employee.response.EmployeeDTO;
@@ -17,10 +16,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
     // public List<EmployeeDTO> getAllEmployees() {
     // List<Employee> employees = employeeRepository.findAll();
@@ -29,11 +30,9 @@ public class EmployeeService {
     // .toList();
     // }
 
-    @Autowired
-    private AuditLogService auditLogService;
+    private final AuditLogService auditLogService;
 
-    @Autowired
-    private CurrentUserService currentUserService;
+    private final CurrentUserService currentUserService;
 
     public Page<EmployeeDTO> getAllEmployeesPagiAndSort(String keyword, int page, int size, String sortBy,
             String sortDir) {
