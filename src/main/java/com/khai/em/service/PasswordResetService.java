@@ -1,14 +1,10 @@
 package com.khai.em.service;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,22 +25,17 @@ public class PasswordResetService {
     private static final int OTP_TTL_MINUTES = 5;
     private static final int OTP_MAX_ATTEMPTS = 5;
 
-    private final SecureRandom secureRandom = new SecureRandom();
-
     private final UserRepository userRepository;
 
     private final StringRedisTemplate redisTemplate;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final JavaMailSender mailSender;
+    private final EmailService emailService;
 
     private final AuditLogService auditLogService;
 
     private final CurrentUserService currentUserService;
-
-    @Value("${app.mail.from:${spring.mail.username:}}")
-    private String fromEmail;
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
@@ -55,7 +46,7 @@ public class PasswordResetService {
             return;
         }
 
-        String otp = generateOtp6Digits();
+        String otp = emailService.generateOtp6Digits();
         String otpHash = passwordEncoder.encode(otp);
 
         String otpKey = "otp:" + email;
@@ -64,7 +55,7 @@ public class PasswordResetService {
         redisTemplate.opsForValue().set(otpKey, otpHash, OTP_TTL_MINUTES, TimeUnit.MINUTES);
         redisTemplate.opsForValue().set(attemptKey, "0", OTP_TTL_MINUTES, TimeUnit.MINUTES);
 
-        sendOtpEmail(email, otp, LocalDateTime.now().plusMinutes(OTP_TTL_MINUTES));
+        emailService.sendPasswordResetOtpEmail(email, otp, LocalDateTime.now().plusMinutes(OTP_TTL_MINUTES));
     }
 
     @Transactional
@@ -102,23 +93,6 @@ public class PasswordResetService {
         redisTemplate.delete(Arrays.asList(otpKey, attemptKey));
 
         auditLogService.logPublic("Reset", user, "Password", user.getId(), "Password reset successfully");
-    }
-
-    private void sendOtpEmail(String toEmail, String otp, LocalDateTime expiresAt) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (fromEmail != null && !fromEmail.isBlank()) {
-            message.setFrom(fromEmail);
-        }
-        message.setTo(toEmail);
-        message.setSubject("Password reset OTP");
-        message.setText("Your OTP is: " + otp + "\n\nExpires at: " + expiresAt
-                + "\n\nIf you did not request this, please ignore this email.");
-        mailSender.send(message);
-    }
-
-    private String generateOtp6Digits() {
-        int value = secureRandom.nextInt(1_000_000);
-        return String.format("%06d", value);
     }
 
     private String normalizeEmail(String email) {
