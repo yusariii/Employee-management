@@ -3,6 +3,7 @@ package com.khai.em.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ import com.khai.em.dto.auth.request.SignupRequest;
 import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
 import com.khai.em.dto.auth.request.ChangePasswordRequest;
+import com.khai.em.dto.auth.request.VerifyNewDeviceRequest;
+import com.khai.em.dto.auth.response.JwtResponse;
 import com.khai.em.dto.common.response.MessageResponse;
 import com.khai.em.service.AuthService;
 import com.khai.em.service.PasswordResetService;
@@ -35,8 +38,18 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest));
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        Object result = authService.login(loginRequest, request);
+        if (result instanceof JwtResponse) {
+            return ResponseEntity.ok(result);
+        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
+    }
+
+    @PostMapping("/verify-new-device")
+    public ResponseEntity<?> verifyNewDevice(@Valid @RequestBody VerifyNewDeviceRequest verifyRequest,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(authService.verifyNewDevice(verifyRequest, request));
     }
 
     @GetMapping("/me")

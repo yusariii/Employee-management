@@ -14,22 +14,28 @@ public class UserDetailsImpl implements UserDetails {
 
     private final Long id;
     private final String username;
+    private final String email;
     private final String password;
     private final Role role;
 
-    public UserDetailsImpl(Long id, String username, String password, Role role) {
+    public UserDetailsImpl(Long id, String username, String email, String password, Role role) {
         this.id = id;
         this.username = username;
+        this.email = email;
         this.password = password;
         this.role = role;
     }
 
     public static UserDetailsImpl build(User user) {
-        return new UserDetailsImpl(user.getId(), user.getUsername(), user.getPassword(), user.getRole());
+        return new UserDetailsImpl(user.getId(), user.getUsername(), user.getEmail(), user.getPassword(), user.getRole());
     }
 
     public Long getId() {
         return id;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     @Override
