@@ -9,7 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import com.khai.em.security.ForwardedWebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import com.khai.em.dto.auth.request.LoginRequest;
@@ -23,12 +23,12 @@ import com.khai.em.entity.Employee;
 import com.khai.em.entity.Role;
 import com.khai.em.entity.User;
 import com.khai.em.entity.UserDevice;
+import com.khai.em.exception.NewDeviceVerificationRequiredException;
 import com.khai.em.repository.EmployeeRepository;
 import com.khai.em.repository.UserDeviceRepository;
 import com.khai.em.repository.UserRepository;
 import com.khai.em.security.CurrentUserService;
 import com.khai.em.security.JwtUtils;
-import com.khai.em.security.NewDeviceVerificationRequiredException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -61,9 +61,8 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(), loginRequest.getPassword());
 
-        WebAuthenticationDetails details = new WebAuthenticationDetails(request);
-
-        authToken.setDetails(details);
+        String clientIp = resolveClientIp(request);
+        authToken.setDetails(new ForwardedWebAuthenticationDetails(request, clientIp));
 
         // Authentication authentication = authenticationManager.authenticate(
         //         new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -150,13 +149,12 @@ public class AuthService {
             redisTemplate.opsForValue().set("jwt:active:" + jti, username, remainingTimeMs, TimeUnit.MILLISECONDS);
         }
 
-        // Optional: you can notify user by email that a new device has been trusted.
         // emailService.sendSimpleEmail(email, "New device trusted", "IP " + clientIp + " has been trusted.");
 
         return new JwtResponse(jwt, username);
     }
 
-    // NOTE: AuthService doesn't resolve IP for login anymore; AdapterAuthenticationProvider does.
+    // NOTE: IP checks for new-device verification are handled via AuthenticationSuccessEvent listener.
 
     private String resolveClientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
