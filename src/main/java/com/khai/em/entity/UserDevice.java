@@ -24,7 +24,6 @@ import lombok.Setter;
 @Setter
 public class UserDevice {
 
-    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
