@@ -29,12 +29,13 @@ import java.util.List;
 public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
-
+    private final IpBlacklistFilter ipBlacklistFilter;
     private final UserDetailsService userDetailsService;
 
 
-    public SecurityConfig(AuthTokenFilter authTokenFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(AuthTokenFilter authTokenFilter, IpBlacklistFilter ipBlacklistFilter, UserDetailsService userDetailsService) {
         this.authTokenFilter = authTokenFilter;
+        this.ipBlacklistFilter = ipBlacklistFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -48,11 +49,11 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(
             HttpSecurity http,
-            AdapterAuthenticationProvider adapterAuthenticationProvider
+            DaoAuthenticationProvider daoAuthenticationProvider
     ) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
-        builder.authenticationProvider(adapterAuthenticationProvider);
+        builder.authenticationProvider(daoAuthenticationProvider);
 
         return builder.build();
     }
@@ -79,6 +80,8 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
+
+        http.addFilterBefore(ipBlacklistFilter, UsernamePasswordAuthenticationFilter.class);
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
