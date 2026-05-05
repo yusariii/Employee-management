@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class EmailService {
         return String.format("%06d", value);
     }
 
+    @Async
     public void sendPasswordResetOtpEmail(String toEmail, String otp, LocalDateTime expiresAt) {
         String subject = "Password reset OTP";
         String text = "Your OTP is: " + otp + "\n\nExpires at: " + expiresAt
@@ -45,6 +47,7 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    @Async
     public void sendNewDeviceLoginOtpEmail(String email, String otp, String clientIp, LocalDateTime expiresAt) {
         String subject = "Verify new device login";
         String text = "We detected a login to your account from a new device or location (IP: " + clientIp + ")."
