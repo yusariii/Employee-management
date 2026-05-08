@@ -24,23 +24,19 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 
 @Configuration 
 @EnableWebSecurity 
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
     private final IpBlacklistFilter ipBlacklistFilter;
     private final UserDetailsService userDetailsService;
-
-
-    public SecurityConfig(AuthTokenFilter authTokenFilter, IpBlacklistFilter ipBlacklistFilter, UserDetailsService userDetailsService) {
-        this.authTokenFilter = authTokenFilter;
-        this.ipBlacklistFilter = ipBlacklistFilter;
-        this.userDetailsService = userDetailsService;
-    }
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(PasswordEncoder passwordEncoder){
@@ -58,11 +54,13 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             HttpSecurity http,
             DaoAuthenticationProvider daoAuthenticationProvider,
+            OtpAuthenticationProvider otpAuthenticationProvider,
             AuthenticationEventPublisher authenticationEventPublisher
     ) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
         builder.authenticationEventPublisher(authenticationEventPublisher);
+        builder.authenticationProvider(otpAuthenticationProvider);
         builder.authenticationProvider(daoAuthenticationProvider);
 
         return builder.build();
@@ -78,6 +76,8 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login", 
+                "/api/auth/otp/request",
+                "/api/auth/otp/verify",
                 "/api/auth/verify-new-device",
                 "/api/auth/register", 
                 "/api/auth/forgot-password", 

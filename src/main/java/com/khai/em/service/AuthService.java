@@ -9,12 +9,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.khai.em.security.ForwardedWebAuthenticationDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import com.khai.em.dto.auth.request.LoginRequest;
+import com.khai.em.dto.auth.request.OtpLoginRequest;
 import com.khai.em.dto.auth.request.SignupRequest;
 import com.khai.em.dto.auth.request.VerifyNewDeviceRequest;
+import com.khai.em.dto.auth.request.VerifyOtpLoginRequest;
 import com.khai.em.dto.auth.response.AuthMeResponse;
 import com.khai.em.dto.auth.response.JwtResponse;
 import com.khai.em.dto.auth.response.NewDeviceVerificationRequiredResponse;
@@ -23,12 +25,14 @@ import com.khai.em.entity.Employee;
 import com.khai.em.entity.Role;
 import com.khai.em.entity.User;
 import com.khai.em.entity.UserDevice;
-import com.khai.em.exception.NewDeviceVerificationRequiredException;
 import com.khai.em.repository.EmployeeRepository;
 import com.khai.em.repository.UserDeviceRepository;
 import com.khai.em.repository.UserRepository;
 import com.khai.em.security.CurrentUserService;
+import com.khai.em.security.ForwardedWebAuthenticationDetails;
 import com.khai.em.security.JwtUtils;
+import com.khai.em.security.OtpAuthenticationToken;
+import com.khai.em.exception.NewDeviceVerificationRequiredException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -54,6 +58,8 @@ public class AuthService {
 
     private final CurrentUserService currentUserService;
 
+    private final OtpLoginService otpLoginService;
+
     private final UserDeviceRepository userDeviceRepository;
 
     public Object login(LoginRequest loginRequest, HttpServletRequest request) {
@@ -62,7 +68,9 @@ public class AuthService {
                 loginRequest.getUsername(), loginRequest.getPassword());
 
         String clientIp = resolveClientIp(request);
-        authToken.setDetails(new ForwardedWebAuthenticationDetails(request, clientIp));
+        WebAuthenticationDetails details = new ForwardedWebAuthenticationDetails(request, clientIp);
+
+        authToken.setDetails(details);
 
         // Authentication authentication = authenticationManager.authenticate(
         //         new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -149,12 +157,31 @@ public class AuthService {
             redisTemplate.opsForValue().set("jwt:active:" + jti, username, remainingTimeMs, TimeUnit.MILLISECONDS);
         }
 
+        // Optional: you can notify user by email that a new device has been trusted.
         // emailService.sendSimpleEmail(email, "New device trusted", "IP " + clientIp + " has been trusted.");
 
         return new JwtResponse(jwt, username);
     }
 
-    // NOTE: IP checks for new-device verification are handled via AuthenticationSuccessEvent listener.
+    public MessageResponse otpLoginRequest(OtpLoginRequest request){
+        otpLoginService.otpLoginRequest(request.getUsername());
+        return new MessageResponse("OTP sent successfully");
+    }
+
+    public JwtResponse otpLoginVerify(VerifyOtpLoginRequest request){
+        Authentication authentication = authenticationManager.authenticate(
+            new OtpAuthenticationToken(request.getUsername(), request.getOtp())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String username = request.getUsername();
+        String jwt = jwtUtils.generateToken(username);
+        String jti = jwtUtils.getJwtIdFromJwtToken(jwt);
+        long remainingTimeMs = jwtUtils.getExpirationDateFromJwtToken(jwt).getTime() - System.currentTimeMillis();
+        if (remainingTimeMs > 0) {
+            redisTemplate.opsForValue().set("jwt:active:" + jti, username, remainingTimeMs, TimeUnit.MILLISECONDS);
+        }
+        return new JwtResponse(jwt, username);
+    }
 
     private String resolveClientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");

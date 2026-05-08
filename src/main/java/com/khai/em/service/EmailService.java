@@ -36,17 +36,6 @@ public class EmailService {
         sendSimpleEmail(toEmail, subject, text);
     }
 
-    public void sendSimpleEmail(String toEmail, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (fromEmail != null && !fromEmail.isBlank()) {
-            message.setFrom(fromEmail);
-        }
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
-    }
-
     @Async
     public void sendNewDeviceLoginOtpEmail(String email, String otp, String clientIp, LocalDateTime expiresAt) {
         String subject = "Verify new device login";
@@ -56,5 +45,26 @@ public class EmailService {
                 + "\n\nIf you did not attempt to log in, please change your password immediately.";
 
         sendSimpleEmail(email, subject, text);
+    }
+
+    @Async
+    public void sendOtpLoginEmail(String email, String otp, LocalDateTime expiresAt) {
+        String subject = "Your OTP for login";
+        String text = "Your OTP for login is: " + otp
+                + "\nExpires at: " + expiresAt
+                + "\n\nIf you did not attempt to log in, please ignore this email.";
+
+        sendSimpleEmail(email, subject, text);
+    }
+
+    public void sendSimpleEmail(String toEmail, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (fromEmail != null && !fromEmail.isBlank()) {
+            message.setFrom(fromEmail);
+        }
+        message.setTo(toEmail);
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
     }
 }

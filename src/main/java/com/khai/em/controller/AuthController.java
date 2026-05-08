@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.khai.em.dto.auth.request.LoginRequest;
+import com.khai.em.dto.auth.request.OtpLoginRequest;
 import com.khai.em.dto.auth.request.SignupRequest;
 import com.khai.em.dto.auth.request.ForgotPasswordRequest;
 import com.khai.em.dto.auth.request.ResetPasswordRequest;
 import com.khai.em.dto.auth.request.ChangePasswordRequest;
 import com.khai.em.dto.auth.request.VerifyNewDeviceRequest;
+import com.khai.em.dto.auth.request.VerifyOtpLoginRequest;
 import com.khai.em.dto.auth.response.JwtResponse;
 import com.khai.em.dto.common.response.MessageResponse;
 import com.khai.em.service.AuthService;
@@ -50,6 +52,16 @@ public class AuthController {
     public ResponseEntity<?> verifyNewDevice(@Valid @RequestBody VerifyNewDeviceRequest verifyRequest,
             HttpServletRequest request) {
         return ResponseEntity.ok(authService.verifyNewDevice(verifyRequest, request));
+    }
+
+    @PostMapping("/otp/request")
+    public ResponseEntity<?> requestOtp(@Valid @RequestBody OtpLoginRequest request) {
+        return ResponseEntity.ok(authService.otpLoginRequest(request));
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpLoginRequest request){
+        return ResponseEntity.ok(authService.otpLoginVerify(request));
     }
 
     @GetMapping("/me")
