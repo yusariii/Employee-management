@@ -10,11 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.khai.em.entity.User;
 import com.khai.em.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional

@@ -7,14 +7,13 @@ import org.springframework.stereotype.Service;
 import com.khai.em.entity.User;
 import com.khai.em.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CurrentUserService {
 
     private final UserRepository userRepository;
-
-    public CurrentUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public User requireCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

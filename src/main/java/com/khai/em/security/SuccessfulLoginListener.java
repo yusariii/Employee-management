@@ -16,7 +16,10 @@ import com.khai.em.exception.NewDeviceVerificationRequiredException;
 import com.khai.em.repository.UserDeviceRepository;
 import com.khai.em.service.EmailService;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class SuccessfulLoginListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     private static final int NEW_DEVICE_OTP_TTL_MINUTES = 10;
@@ -25,17 +28,6 @@ public class SuccessfulLoginListener implements ApplicationListener<Authenticati
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate redisTemplate;
-
-    public SuccessfulLoginListener(
-            UserDeviceRepository userDeviceRepository,
-            EmailService emailService,
-            PasswordEncoder passwordEncoder,
-            StringRedisTemplate redisTemplate) {
-        this.userDeviceRepository = userDeviceRepository;
-        this.emailService = emailService;
-        this.passwordEncoder = passwordEncoder;
-        this.redisTemplate = redisTemplate;
-    }
 
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
