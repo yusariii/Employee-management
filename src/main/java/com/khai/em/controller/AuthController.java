@@ -60,8 +60,8 @@ public class AuthController {
     }
 
     @PostMapping("/otp/verify")
-    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpLoginRequest request){
-        return ResponseEntity.ok(authService.otpLoginVerify(request));
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpLoginRequest request, HttpServletRequest servletRequest){
+        return ResponseEntity.ok(authService.otpLoginVerify(request, servletRequest));
     }
 
     @GetMapping("/me")

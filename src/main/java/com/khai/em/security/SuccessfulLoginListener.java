@@ -66,8 +66,7 @@ public class SuccessfulLoginListener implements ApplicationListener<Authenticati
             String otpKey = "new_device:otp:" + challengeId;
             String attemptKey = "new_device:attempts:" + challengeId;
 
-            String challengeValue = userDetail.getUsername() + "|" + userDetail.getId() + "|" + userDetail.getEmail()
-                    + "|" + clientIp;
+            String challengeValue = userDetail.getUsername() + "|" + userDetail.getId() + "|" + userDetail.getEmail();
             redisTemplate.opsForValue().set(challengeKey, challengeValue, NEW_DEVICE_OTP_TTL_MINUTES, TimeUnit.MINUTES);
             redisTemplate.opsForValue().set(otpKey, otpHash, NEW_DEVICE_OTP_TTL_MINUTES, TimeUnit.MINUTES);
             redisTemplate.opsForValue().set(attemptKey, "0", NEW_DEVICE_OTP_TTL_MINUTES, TimeUnit.MINUTES);

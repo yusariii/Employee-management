@@ -32,6 +32,7 @@ import com.khai.em.security.CurrentUserService;
 import com.khai.em.security.ForwardedWebAuthenticationDetails;
 import com.khai.em.security.JwtUtils;
 import com.khai.em.security.OtpAuthenticationToken;
+import com.khai.em.security.UserDetailsImpl;
 import com.khai.em.exception.NewDeviceVerificationRequiredException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +62,8 @@ public class AuthService {
     private final OtpLoginService otpLoginService;
 
     private final UserDeviceRepository userDeviceRepository;
+
+    private final EmailService emailService;
 
     public Object login(LoginRequest loginRequest, HttpServletRequest request) {
 
@@ -121,12 +124,7 @@ public class AuthService {
 
         String username = parts[0];
         Long userId = Long.valueOf(parts[1]);
-        // String email = parts[2];
-        String expectedIp = parts[3];
-
-        if (clientIp == null || !clientIp.equals(expectedIp)) {
-            throw new IllegalArgumentException("Challenge is not valid for this IP");
-        }
+        String email = parts[2];
 
         Long attempts = redisTemplate.opsForValue().increment(attemptKey);
         if (attempts != null && attempts > NEW_DEVICE_OTP_MAX_ATTEMPTS) {
@@ -157,22 +155,47 @@ public class AuthService {
             redisTemplate.opsForValue().set("jwt:active:" + jti, username, remainingTimeMs, TimeUnit.MILLISECONDS);
         }
 
-        // Optional: you can notify user by email that a new device has been trusted.
-        // emailService.sendSimpleEmail(email, "New device trusted", "IP " + clientIp + " has been trusted.");
+        emailService.sendSimpleEmail(email, "New device trusted", "IP " + clientIp + " has been trusted.");
 
         return new JwtResponse(jwt, username);
     }
 
-    public MessageResponse otpLoginRequest(OtpLoginRequest request){
+    public MessageResponse otpLoginRequest(OtpLoginRequest request) {
         otpLoginService.otpLoginRequest(request.getUsername());
         return new MessageResponse("OTP sent successfully");
     }
 
-    public JwtResponse otpLoginVerify(VerifyOtpLoginRequest request){
+    public JwtResponse otpLoginVerify(VerifyOtpLoginRequest request, HttpServletRequest servletRequest){
         Authentication authentication = authenticationManager.authenticate(
-            new OtpAuthenticationToken(request.getUsername(), request.getOtp())
+                new OtpAuthenticationToken(request.getUsername(), request.getOtp())
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String clientIp = (servletRequest != null) ? resolveClientIp(servletRequest) : null;
+        if (clientIp != null) {
+            Long userId = null;
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetailsImpl details) {
+                userId = details.getId();
+            }
+            if (userId == null) {
+                userId = userRepository.findByUsername(request.getUsername())
+                        .map(User::getId)
+                        .orElse(null);
+            }
+
+            if (userId != null) {
+                UserDevice device = userDeviceRepository.findByUserIdAndIpAddress(userId, clientIp).orElse(null);
+                if (device == null) {
+                    device = new UserDevice();
+                    device.setUserId(userId);
+                    device.setIpAddress(clientIp);
+                }
+                device.setTrusted(Boolean.TRUE);
+                userDeviceRepository.save(device);
+            }
+        }
+
         String username = request.getUsername();
         String jwt = jwtUtils.generateToken(username);
         String jti = jwtUtils.getJwtIdFromJwtToken(jwt);
